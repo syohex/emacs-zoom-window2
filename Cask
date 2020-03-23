@@ -5,5 +5,4 @@
 
 (development
  (depends-on "ert")
- (depends-on "elscreen")
- (depends-on "persp-mode"))
+ (depends-on "elscreen"))

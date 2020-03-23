@@ -17,7 +17,6 @@ Background color of `mode-line` is changed when zoomed
 ## Features
 
 - Support elscreen
-- Support persp-mode
 - Support multiple frames(This feature cannot use with elscreen and persp-mode yet)
 
 ## Basic Usage
@@ -41,11 +40,6 @@ Color of `mode-line` when zoom-window2 is enabled
 
 Set `non-nil` if you use `elscreen`
 
-### `zoom-window2-use-persp`(Default is `nil`)
-
-Set `non-nil` if you use `persp-mode`
-
-
 ## Example
 
 ```lisp
@@ -63,20 +57,6 @@ Set `non-nil` if you use `persp-mode`
 
 (require 'zoom-window2)
 (setq zoom-window2-use-elscreen t)
-(zoom-window2-setup)
-
-(global-set-key (kbd "C-x C-z") 'zoom-window2-zoom)
-```
-
-### zoom-window2 with [persp-mode](https://github.com/Bad-ptr/persp-mode.el)
-
-```lisp
-(with-eval-after-load "persp-mode-autoloads"
-  (add-hook 'after-init-hook #'(lambda () (persp-mode 1))))
-
-(require 'zoom-window2)
-(custom-set-variables
- '(zoom-window2-use-persp t))
 (zoom-window2-setup)
 
 (global-set-key (kbd "C-x C-z") 'zoom-window2-zoom)
