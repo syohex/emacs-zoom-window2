@@ -1,22 +1,18 @@
-# zoom-window.el [![melpa badge][melpa-badge]][melpa-link] [![melpa stable badge][melpa-stable-badge]][melpa-stable-link]
+# zoom-window2.el
 
 ## Introduction
 
-`zoom-window` provides window zoom like tmux zoom and unzoom.
+`zoom-window2` provides window zoom like tmux zoom and unzoom.
 
 
 ## Screenshot
 
-![Screenshot of zoom-window.el](image/zoom-window.gif)
+![Screenshot of zoom-window2.el](image/zoom-window.gif)
 
 Background color of `mode-line` is changed when zoomed
 
 
-## Requirements
-
-- Emacs 24.3 or higher
-
-`zoom-window.el` supports elscreen and persp-mode.
+`zoom-window2.el` supports elscreen and persp-mode.
 
 ## Features
 
@@ -24,37 +20,28 @@ Background color of `mode-line` is changed when zoomed
 - Support persp-mode
 - Support multiple frames(This feature cannot use with elscreen and persp-mode yet)
 
-## Installation
-
-`zoom-window` is available on [MELPA](https://melpa.org/) and [MELPA stable](https://stable.melpa.org/)
-
-You can install `zoom-window` with the following command.
-
-<kbd>M-x package-install [RET] zoom-window [RET]</kbd>
-
-
 ## Basic Usage
 
-#### `zoom-window-zoom`
+#### `zoom-window2-zoom`
 
 Toggle between zooming current window and unzooming
 
-#### `zoom-window-next`
+#### `zoom-window2-next`
 
 Switch to next buffer which is in zoomed frame/screen/perspective.
 
 
 ## Customization
 
-### `zoom-window-mode-line-color`(Default is `"green"`)
+### `zoom-window2-mode-line-color`(Default is `"green"`)
 
-Color of `mode-line` when zoom-window is enabled
+Color of `mode-line` when zoom-window2 is enabled
 
-### `zoom-window-use-elscreen`(Default is `nil`)
+### `zoom-window2-use-elscreen`(Default is `nil`)
 
 Set `non-nil` if you use `elscreen`
 
-### `zoom-window-use-persp`(Default is `nil`)
+### `zoom-window2-use-persp`(Default is `nil`)
 
 Set `non-nil` if you use `persp-mode`
 
@@ -62,40 +49,35 @@ Set `non-nil` if you use `persp-mode`
 ## Example
 
 ```lisp
-(require 'zoom-window)
-(global-set-key (kbd "C-x C-z") 'zoom-window-zoom)
+(require 'zoom-window2)
+(global-set-key (kbd "C-x C-z") 'zoom-window2-zoom)
 (custom-set-variables
- '(zoom-window-mode-line-color "DarkGreen"))
+ '(zoom-window2-mode-line-color "DarkGreen"))
 ```
 
-### zoom-window with [elscreen](https://github.com/knu/elscreen)
+### zoom-window2 with [elscreen](https://github.com/knu/elscreen)
 
 ```lisp
 (require 'elscreen)
 (elscreen-start)
 
-(require 'zoom-window)
-(setq zoom-window-use-elscreen t)
-(zoom-window-setup)
+(require 'zoom-window2)
+(setq zoom-window2-use-elscreen t)
+(zoom-window2-setup)
 
-(global-set-key (kbd "C-x C-z") 'zoom-window-zoom)
+(global-set-key (kbd "C-x C-z") 'zoom-window2-zoom)
 ```
 
-### zoom-window with [persp-mode](https://github.com/Bad-ptr/persp-mode.el)
+### zoom-window2 with [persp-mode](https://github.com/Bad-ptr/persp-mode.el)
 
 ```lisp
 (with-eval-after-load "persp-mode-autoloads"
   (add-hook 'after-init-hook #'(lambda () (persp-mode 1))))
 
-(require 'zoom-window)
+(require 'zoom-window2)
 (custom-set-variables
- '(zoom-window-use-persp t))
-(zoom-window-setup)
+ '(zoom-window2-use-persp t))
+(zoom-window2-setup)
 
-(global-set-key (kbd "C-x C-z") 'zoom-window-zoom)
+(global-set-key (kbd "C-x C-z") 'zoom-window2-zoom)
 ```
-
-[melpa-link]: https://melpa.org/#/zoom-window
-[melpa-stable-link]: https://stable.melpa.org/#/zoom-window
-[melpa-badge]: https://melpa.org/packages/zoom-window-badge.svg
-[melpa-stable-badge]: https://stable.melpa.org/packages/zoom-window-badge.svg
