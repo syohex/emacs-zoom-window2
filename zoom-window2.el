@@ -35,8 +35,6 @@
 (declare-function elscreen-get-current-screen "elscreen")
 (declare-function elscreen-set-screen-property "elscreen")
 (declare-function elscreen-get-conf-list "elscreen")
-(declare-function safe-persp-name "persp-mode")
-(declare-function get-frame-persp "persp-mode")
 
 (defgroup zoom-window2 nil
   "zoom window like tmux"
@@ -45,13 +43,6 @@
 (defcustom zoom-window2-use-elscreen nil
   "non-nil means using elscreen"
   :type 'boolean)
-
-(defcustom zoom-window2-use-persp nil
-  "Non-nil means using persp-mode."
-  :type 'boolean)
-
-(defvar zoom-window2-persp-alist nil
-  "Association list for working with persp-mode.")
 
 (defcustom zoom-window2-mode-line-color "green"
   "Color of mode-line when zoom-window2 is enabled"
@@ -101,35 +92,9 @@
     (setq prop (zoom-window2--put-alist 'zoom-window2-saved-color zoom-window2--orig-color prop))
     (elscreen-set-screen-property current-screen prop)))
 
-(defun zoom-window2--persp-before-switch-hook (persp-name _frame-or-window)
-  "Hook to run when do persp switching.
-PERSP-NAME: name of a perspective to switch.
-FRAME-OR-WINDOW: a frame or a window for which the switching takes place."
-  (let* ((property (assoc-default persp-name zoom-window2-persp-alist))
-         (orig-background (assoc-default 'zoom-window2-saved-color property))
-         (is-zoomed (assoc-default 'zoom-window2-is-zoomed property))
-         (curframe (window-frame nil)))
-    (if is-zoomed
-        (set-face-background 'mode-line zoom-window2-mode-line-color curframe)
-      (if orig-background
-          (set-face-background 'mode-line orig-background curframe)
-        (set-face-background 'mode-line zoom-window2--orig-color curframe)))
-
-    (if (and is-zoomed
-             orig-background)
-        (force-mode-line-update))))
-
-(defun zoom-window2--persp-before-kill-hook (persp)
-  "Hook to run when do persp killing.
-PERSP: the perspective to be killed."
-  (let ((persp-name (safe-persp-name persp)))
-    (setq zoom-window2-persp-alist
-          (delq (assoc persp-name zoom-window2-persp-alist)
-                zoom-window2-persp-alist))))
-
 ;;;###autoload
 (defun zoom-window2-setup ()
-  "To work with elscreen or persp-mode."
+  "To work with elscreen"
   (cond
    ;; to work with elscreen
    (zoom-window2-use-elscreen
@@ -139,44 +104,12 @@ PERSP: the perspective to be killed."
     (add-hook 'elscreen-screen-update-hook 'zoom-window2--elscreen-update)
     ;; for first tab
     (zoom-window2--elscreen-set-default))
-
-   ;; to work with persp
-   (zoom-window2-use-persp
-    (setq zoom-window2--orig-color (face-background 'mode-line))
-
-    (add-hook 'persp-before-switch-functions
-              'zoom-window2--persp-before-switch-hook)
-    (add-hook 'persp-before-kill-functions 'zoom-window2--persp-before-kill-hook))
-
    ;; do nothing else
    (t nil)))
-
-(defun zoom-window2--init-persp-property (persp-name)
-  "Initialize property of PERSP-NAME in `zoom-window2-persp-alist'."
-  (let ((property '(('zoom-window2-is-zoomed nil)
-                    ('zoom-window2-saved-color zoom-window2--orig-color))))
-    (setq zoom-window2-persp-alist
-          (zoom-window2--put-alist persp-name property zoom-window2-persp-alist))
-    property))
 
 (defun zoom-window2--save-mode-line-color ()
   (cond (zoom-window2-use-elscreen
          (zoom-window2--elscreen-set-zoomed))
-
-        (zoom-window2-use-persp
-         (let* ((persp-name (safe-persp-name (get-frame-persp)))
-                (property (or (assoc-default
-                               persp-name zoom-window2-persp-alist)
-                              (zoom-window2--init-persp-property persp-name))))
-           (setq property (zoom-window2--put-alist
-                           'zoom-window2-saved-color
-                           (face-background 'mode-line)
-                           property))
-           (setq zoom-window2-persp-alist (zoom-window2--put-alist
-                                          persp-name
-                                          property
-                                          zoom-window2-persp-alist))))
-
         (t (setq zoom-window2--orig-color (face-background 'mode-line)))))
 
 (defun zoom-window2--save-buffers ()
@@ -186,14 +119,6 @@ PERSP: the perspective to be killed."
            (let* ((curprops (zoom-window2--elscreen-current-property))
                   (props (zoom-window2--put-alist 'zoom-window2-buffers buffers curprops)))
              (elscreen-set-screen-property (elscreen-get-current-screen) props)))
-          (zoom-window2-use-persp
-           (let* ((persp-name (safe-persp-name (get-frame-persp)))
-                  (property (or (assoc-default persp-name zoom-window2-persp-alist)
-                                (zoom-window2--init-persp-property persp-name))))
-             (setq property (zoom-window2--put-alist
-                             'zoom-window2-buffers buffers property))
-             (setq zoom-window2-persp-alist (zoom-window2--put-alist
-                                            persp-name property zoom-window2-persp-alist))))
           (t
            (set-frame-parameter
             (window-frame nil) 'zoom-window2-buffers buffers)))))
@@ -202,10 +127,6 @@ PERSP: the perspective to be killed."
   (cond (zoom-window2-use-elscreen
          (let ((props (zoom-window2--elscreen-current-property)))
            (assoc-default 'zoom-window2-buffers props)))
-        (zoom-window2-use-persp
-         (let* ((persp-name (safe-persp-name (get-frame-persp)))
-                (property (assoc-default persp-name zoom-window2-persp-alist)))
-           (assoc-default 'zoom-window2-buffers property)))
         (t
          (frame-parameter (window-frame nil) 'zoom-window2-buffers))))
 
@@ -214,22 +135,12 @@ PERSP: the perspective to be killed."
          (cond (zoom-window2-use-elscreen
                 (zoom-window2--elscreen-current-tab-property
                  'zoom-window2-saved-color))
-
-               (zoom-window2-use-persp
-                (let* ((persp-name (safe-persp-name (get-frame-persp)))
-                       (property (assoc-default persp-name
-                                                zoom-window2-persp-alist)))
-                  (assoc-default 'zoom-window2-saved-color property)))
-
                (t zoom-window2--orig-color))))
     (set-face-background 'mode-line color (window-frame nil))))
 
 (defun zoom-window2--configuration-key ()
   (cond (zoom-window2-use-elscreen
          (format "zoom-window2-%d" (elscreen-get-current-screen)))
-        (zoom-window2-use-persp
-         (let ((persp-name (safe-persp-name (get-frame-persp))))
-           (format "perspective-%s" persp-name)))
         (t (let ((parent-id (frame-parameter (window-frame nil) 'parent-id)))
              (if (not parent-id)
                  :zoom-window2 ;; not support multiple frame
@@ -260,20 +171,6 @@ PERSP: the perspective to be killed."
            (val (assoc-default 'zoom-window2-is-zoomed prop)))
       (setq prop (zoom-window2--put-alist 'zoom-window2-is-zoomed (not val) prop))
       (elscreen-set-screen-property current-screen prop)))
-
-   (zoom-window2-use-persp
-    (let* ((persp-name (safe-persp-name (get-frame-persp)))
-           (property (or (assoc-default persp-name
-                                        zoom-window2-persp-alist)
-                         (zoom-window2--init-persp-property persp-name)))
-           (value (assoc-default 'zoom-window2-is-zoomed property)))
-      (setq property (zoom-window2--put-alist
-                      'zoom-window2-is-zoomed (not value) property))
-      (setq zoom-window2-persp-alist
-            (zoom-window2--put-alist persp-name
-                                    property
-                                    zoom-window2-persp-alist))))
-
    (t (let* ((curframe (window-frame nil))
              (status (frame-parameter curframe 'zoom-window2-enabled)))
         (set-frame-parameter curframe 'zoom-window2-enabled (not status))))))
@@ -282,12 +179,6 @@ PERSP: the perspective to be killed."
   (cond
    (zoom-window2-use-elscreen
     (zoom-window2--elscreen-current-tab-property 'zoom-window2-is-zoomed))
-
-   (zoom-window2-use-persp
-    (let* ((persp-name (safe-persp-name (get-frame-persp)))
-           (property (assoc-default persp-name zoom-window2-persp-alist)))
-      (and property (assoc-default 'zoom-window2-is-zoomed property))))
-
    (t (frame-parameter (window-frame nil) 'zoom-window2-enabled))))
 
 (defsubst zoom-window2--goto-line (line)
@@ -324,7 +215,7 @@ PERSP: the perspective to be killed."
       (zoom-window2--toggle-enabled))))
 
 (defun zoom-window2-next ()
-  "Switch to next buffer which is in zoomed frame/screen/perspective."
+  "Switch to next buffer which is in zoomed frame/screen"
   (interactive)
   (let* ((buffers (zoom-window2--get-buffers))
          (targets (member (current-buffer) buffers)))
