@@ -185,14 +185,20 @@
   (goto-char (point-min))
   (forward-line (1- line)))
 
+(defun zoom-window2--restore-buffer (prev-buf)
+  (let ((buf (cl-loop for win in (window-list)
+                      when (eq prev-buf (window-buffer win))
+                      return prev-buf)))
+    (unless buf
+      (switch-to-buffer prev-buf))))
+
 (defun zoom-window2--do-unzoom ()
   (let ((current-line (line-number-at-pos))
         (current-column (current-column))
         (current-buf (current-buffer)))
     (zoom-window2--restore-mode-line-face)
     (zoom-window2--restore-window-configuration)
-    (unless (string= (buffer-name current-buf) (buffer-name))
-      (switch-to-buffer current-buf))
+    (zoom-window2--restore-buffer current-buf)
     (zoom-window2--goto-line current-line)
     (move-to-column current-column)))
 
